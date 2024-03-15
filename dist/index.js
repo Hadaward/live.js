@@ -1,10 +1,26 @@
-import { html, state } from "./live.js";
+import { html, useState, live } from "./lib/index.js";
 export function app() {
-    const count = state(0);
+    const todoList = useState([]);
+    const textInput = useState("");
+    const showNotes = useState(false);
+    const handleAddNote = function () {
+        const value = textInput.get();
+        todoList.set(todoList => [...todoList, value]);
+        textInput.set("");
+    };
     return html `
-    <div>
-        <span>You clicked ${count} times</span>
-        <button type="button" onclick=${() => { count.set(c => c + 1); }}>Click me</button>
+    <div className="app">
+        <div>
+            <label>Type your notes:</label>
+            <input type="text" onchange=${(e) => textInput.set(e.target.value)} value=${textInput} />
+            <button type="button" onclick=${handleAddNote}>Add</button>
+            <button type="button" onclick=${(e) => showNotes.set(show => !show)}>${live(() => html `<span>${showNotes.get() ? "Hide notes" : "Show notes"}</span>`, [showNotes])}</button>
+        </div>
+        <div>
+            <ul>
+                ${live(() => (showNotes.get() ? todoList.get() : []).map(note => html `<li>${note}</li>`), [todoList, showNotes])}
+            </ul>
+        </div>
     </div>
     `;
 }
